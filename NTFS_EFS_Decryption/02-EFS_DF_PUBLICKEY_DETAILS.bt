@@ -1,0 +1,143 @@
+//------------------------------------------------------------------------------------------------------------------------------------------------
+//--- 010 Editor v10.0 Binary Template
+//
+//      File: EFS_DF_PUBLICKEY_DETAILS.bt
+//   Authors: Ramprasad R
+//   Version: 1.0
+//   Purpose: To parse the public key details section of the NTFS $LOGGED_UTILITY_STREAM attribute. 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//              23-Dec-2019     1.0     Initial Version     Ramprasad R     
+//  References:
+//              https://opensource.apple.com/source/ntfs/ntfs-91.20.2/newfs/layout.h.auto.html
+//------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+//  https://stackoverflow.com/questions/12653500/how-to-access-a-struct-member-inside-a-union-in-c
+
+#ifndef __EFS_DF_PUBLICKEY_DETAILS__
+#define __EFS_DF_PUBLICKEY_DETAILS__
+
+
+typedef enum <uint32> {
+    CryptoAPI_Container = 0x01,
+    Unexpected_Type = 0x02,
+    Certificate_Thumbprint = 0x03
+} publickey_type;
+
+
+typedef struct dynamicField2 (int len) {
+    FSkip(len);
+};
+
+
+
+typedef struct SID {
+    LittleEndian();
+    byte sid_revision;
+    byte num_dashes;
+
+    BigEndian();
+    byte security_nt_authority[6];
+    
+    LittleEndian();
+    local int i;
+    
+    for(i=1;i<num_dashes;i++)
+        uint32 machine_identifier;
+    
+    uint32 user_identifier;
+};
+
+string read_sid(SID &s)
+{
+    string ret_str;    
+    SPrintf(ret_str,"S-%x-%x-",s.sid_revision,s.security_nt_authority[5]);
+    local int j;
+    for (j=0;j<s.num_dashes-1;j++)
+        SPrintf(ret_str,"%s%u-",ret_str,s.machine_identifier[j]);
+    SPrintf(ret_str,"%s%u",ret_str,s.user_identifier);
+    return ret_str;
+}
+
+
+/**
+ * This structure is one of the constituents of the Public Key structure. 
+ */
+typedef struct EFS_DF_CERTIFICATE_THUMBPRINT_DETAILS (int len) {
+    uint32 thumbprint_offset <hidden=true>;		/* Offset in bytes to the thumbprint. */
+    uint32 thumbprint_size <hidden=true>;		/* Size of thumbprint in bytes. */
+    uint32 container_name_offset <hidden=true>;	/* Container name offset 0 if no container name present.  */
+    uint32 provider_name_offset <hidden=true>;	/* Provider name offset 0 if no provider name present.  */
+    uint32 user_name_offset <hidden=true>;		/* Username offset 0 if no user name present.  */
+
+    //Calculating field lengths
+    local int container_name_size = provider_name_offset-container_name_offset;
+    local int provider_name_size = user_name_offset - provider_name_offset;
+    
+    //Certificate Thumbprint
+    FSeek(startof(this)+thumbprint_offset);
+    dynamicField2 d2_1 (thumbprint_size) <name="Certificate Thumbprint">;
+
+    //Container Name
+    FSeek(startof(this)+container_name_offset);
+    dynamicField2 d2_2 (container_name_size) <name="Container Name">;
+
+    //Provider Name
+    FSeek(startof(this)+provider_name_offset);
+    dynamicField2 d2_3 (provider_name_size) <name="Provider Name">;
+
+    //User Name
+    FSeek(startof(this)+user_name_offset);
+    dynamicField2 d2_4 (len-user_name_offset) <name="User Name">;
+
+    
+} ;
+
+typedef struct EFS_DF_PUBLICKEY_DETAILS{
+	uint32 cred_length <name="Size of Publickey Details (bytes)">;
+	uint32 sid_offset <name="SID offset (bytes)">;
+    publickey_type p1 <name="Publickey credential type">;
+
+
+        if (p1 == CryptoAPI_Container) //CryptoAPI container
+        {
+            struct cryptoapi_container {
+                uint32 container_name_offset;	/* Offset to container name (may not be zero). */
+                uint32 provider_name_offset;	/* Offset to provider name (may not be zero). */
+                uint32 public_key_blob_offset;	/* Offset to public key blob  */
+                uint32 public_key_blob_size;	/* Size of public key blob. */
+            }c1 <name="CryptoAPI Container Header">;
+        }
+        else if (p1==Certificate_Thumbprint) //Certificate thumbprint
+        {
+            struct certificate_thumbprint {            
+                uint32 cert_thumbprint_details_size;	
+                uint32 cert_thumbprint_details_offset;	
+                uint32 unknown1;	/* Always 0?  Might be padding... */
+                uint32 unknown2;	/* Always 0?  Might be padding... */ 
+
+            } c2 <name="Certificate Thumbprint Header">;
+
+
+
+           // Declare Thumbprint details.
+           local int size_of_thumbprint_details = cred_length-startof(this);
+           //Printf("Start of Public key details"
+           FSeek(startof(this)+c2.cert_thumbprint_details_offset);         
+           EFS_DF_CERTIFICATE_THUMBPRINT_DETAILS e6(c2.cert_thumbprint_details_size);
+
+
+        }
+
+        // Parse the SID structure if it is present.
+       if(sid_offset>0){
+           FSeek(startof(this)+ sid_offset);
+           SID s1<read=read_sid>;
+        }
+};
+
+
+#endif

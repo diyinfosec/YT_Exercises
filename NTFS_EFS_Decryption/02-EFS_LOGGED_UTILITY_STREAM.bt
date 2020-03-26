@@ -1,0 +1,99 @@
+//------------------------------------------------------------------------------------------------------------------------------------------------
+//--- 010 Editor v10.0 Binary Template
+//
+//      File: EFS_LOGGED_UTILITY_STREAM.bt
+//   Authors: Ramprasad R
+//   Version: 1.0
+//   Purpose: To parse the $100 or the $LOGGED_UTILITY_STREAM attribute as used by EFS (Encrypting File System).
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//              23-Dec-2019     1.0     Initial Version     Ramprasad R     
+//  References:
+//              https://opensource.apple.com/source/ntfs/ntfs-91.20.2/newfs/layout.h.auto.html
+//------------------------------------------------------------------------------------------------------------------------------------------------
+
+#include "EFS_DF_PUBLICKEY_DETAILS.bt"
+
+
+/*
+    The LOGGED_UTILITY_STREAM begins with the EFS Attribute Header.
+*/
+typedef struct EFS_ATTR_HEADER{
+    uint32 length <name="Length of EFS Attribute (bytes)">;
+    uint32 state <name="State",hidden=true, comment="Always 0?">;
+    uint32 version <name="EFS Version", comment="Always 2?">;
+    uint32 crypto_api_version <name="Crypto API Version", comment="Always 0?">;
+    byte unknown4[16] <hidden=true, comment="MD5 hash of decrypted FEK?">;
+    byte unknown5[16] <hidden=true, comment="MD5 hash of DDFs?">;
+    byte unknown6[16] <hidden=true, comment="MD5 hash of DRFs?">;
+    uint32 offset_to_ddf_array <name="Offset to DDF array", comment="Will be Zero if no DDFs are present">;
+    uint32 offset_to_drf_array <name="Offset to DRF array", comment="Will be Zero if no DRFs are present">;
+    uint32 reserved <name="Reserved", hidden=true>;
+    //uint64 unknown7;
+} ;
+
+
+typedef struct dynamicField (int len) {
+    FSkip(len);
+};
+
+
+/*
+    Roughly following the EFS Attribute Header is a bunch of decyrption fields (DFs).
+*/
+typedef struct {
+    uint32 df_length <name="Record Length (bytes)", comment="Length of the DDF/DRF record">;
+	uint32 publickey_header_offset <name="Offset to Publickey Details (bytes)">; 
+	uint32 fek_size <name="Size of Encrypted FEK (bytes)", comment="FEK = File Encryption Key">;
+	uint32 fek_offset <name="Offset to Encrypted FEK (bytes)">;
+    uint32 unknown1 <hidden=true>;
+
+    // Go to the location of the Public Key Header
+    FSeek(startof(this)+publickey_header_offset);
+    // Declare the Credential Header variable
+    EFS_DF_PUBLICKEY_DETAILS e4 <name="Public Key Details">;
+
+    // Go to the location of the Encrypted FEK
+    FSeek(startof(this)+fek_offset);
+    // Declare the Encrypted FEK variable
+    dynamicField fek(fek_size) <name="Encrypted FEK">;
+    
+} EFS_DF_HEADER;
+
+
+void createDFRecords(int count,string type)
+{
+    local int i;
+    for(i=1; i<=count; i++)
+    {
+        if(type=="DDF")
+            //Declare Decryption Field Header
+            EFS_DF_HEADER e3 <name="DDF Record">;
+        else if(type=="DRF")
+            EFS_DF_HEADER e3 <name="DRF Record">;
+    }
+}
+
+
+//Declaring the EFS Attribute Header
+EFS_ATTR_HEADER e1 <name="EFS_ATTR_HEADER", comment="$LOGGED_UTILITY_STREAM Header", bgcolor=0xCD5C5C>;
+
+
+// Handling DDFs (Data Decryption Fields)
+if(e1.offset_to_ddf_array > 0)
+{
+    FSeek(e1.offset_to_ddf_array);
+    uint32 ddf_count <name="Number of DDF records">;
+    createDFRecords(ddf_count,"DDF");
+}
+
+
+// Handling DRFs (Data Recovery Fields)
+if(e1.offset_to_drf_array > 0)
+{
+    FSeek(e1.offset_to_drf_array);
+    uint32 drf_count;
+    createDFRecords(drf_count,"DRF");
+}
