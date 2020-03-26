@@ -15,6 +15,8 @@ If you are not having access to either of these then forget decrypting an EFS en
 * Step 5: Decrypt the $DATA attribute (openssl + 010 Editor)
 
 #### The videos detailing these steps are available on YouTube:
+
+[![NTFS EFS Explained](https://img.youtube.com/vi/B4EJg9tNnpc/maxresdefault.jpg)](https://www.youtube.com/playlist?list=PLmW31MWCFahVkyC58bNG0ipJkovjPk-kC "NTFS EFS Explained")
 https://www.youtube.com/playlist?list=PLmW31MWCFahVkyC58bNG0ipJkovjPk-kC
 
 
