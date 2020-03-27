@@ -42,11 +42,14 @@ The step number is prefixed with the filename, so that it's easier to identify w
 
 ## TSK commands used:
 
+#### Non-recursive listing of files under N:\ along with their MFT record numbers. 
 `fls \\.\\n: `
 
+#### Getting attributes of a file based on it's MFT record number.
 `istat \\.\n: 37` 
 
-`istat \\.\\n: 37-128-2`
+#### Printing a specific attribute of a file.
+`icat \\.\\n: 37-128-2`
 
 
 ## OpenSSL commands used:
