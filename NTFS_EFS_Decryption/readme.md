@@ -33,6 +33,7 @@ The step number is prefixed with the filename, so that it's easier to identify w
 * **04-FEK_data_stucture.bin** - FEK data structure containing FEK along with a 16 byte header [as documented here](https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-efsr/00933615-c9cf-4d51-9d9a-bb3fb33a3560)
 * **04-fek.txt** - The file encryption key (FEK)
 * **05-encrypted_cluster.bin** - The entire encrypted cluster on disk (4096 bytes) instead of just limiting to size of the data. 
+* **efs_aes_iv.py** - A Python script to decrypt EFS blocks encrypted with AES. 
  
 
 
