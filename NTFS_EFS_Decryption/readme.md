@@ -25,10 +25,12 @@ The step number is prefixed with the filename, so that it's easier to identify w
 * **01-encrypted_data.bin** - The NTFS $DATA attribute of enc.txt containing the contents encrypted with an AES-256 bit File Encryption Key (FEK).
 * **01-logged_utility_stream.bin** - The NTFS $EFS attribute of enc.txt containing, among other things, an encrypted version of the FEK (EFEK)
 * **02-EFEK_for_TEST_user.bin** - The file containing just the EFEK for the TEST user. 
+* **02-EFEK_reversed.bin** - The file containing the bytes reversed (big-endian) format of the 02-EFEK_for_TEST_user.bin file. 
 * **02-EFS_DF_PUBLICKEY_DETAILS.bt** - 010 Editor tempate for parsing the $EFS attribute. 
 * **02-EFS_LOGGED_UTILITY_STREAM.bt** - 010 Editor template for parsing the $EFS attribute. 
 * **03-efs.pfx** - The PFX archive file containing the EFS private key and certificate. 
 * **03-efs_private_key.pem** - EFS private key extracted from the PFX using openssl. 
+* **04-FEK_data_stucture.bin** - FEK data structure containing FEK along with a 16 byte header [as documented here](https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-efsr/00933615-c9cf-4d51-9d9a-bb3fb33a3560)
 * **04-fek.txt** - The file encryption key (FEK)
 * **05-encrypted_cluster.bin** - The entire encrypted cluster on disk (4096 bytes) instead of just limiting to size of the data. 
  
