@@ -2,9 +2,6 @@ import struct
 from Crypto.Cipher import AES
 from binascii import hexlify, unhexlify
 
-
-
-
 # Function to get the Initialization Vector (IV) used by EFS for AES encrypted files. 
 def get_iv_for_block(inp_block_num):
 #{
@@ -34,7 +31,7 @@ for x in range(1,10):
 	print get_iv_for_block(x)
 '''
 
-#- Thse two inputs need to be changed depending on the file that you are going to decrypt. 
+#- These two inputs need to be changed depending on the file that you are going to decrypt. 
 filename='05-encrypted_cluster.bin'
 aes_key_str = "41FCAB38B716E9D3A27B5297461C66F48A78C4B8C998156F96ABC059C17BD9EB";
 
@@ -71,7 +68,7 @@ with open(filename, 'rb') as f:
 		'''
 		AES Decryption logic. 
 		We are using the PyCrypto library to take care of the crypto. 
-		You might need to do "pip install pycryptodome"
+		You might need to "pip install pycryptodome"
 		
 		The decryption is pretty straightforward. There are 3 steps:
 		1. Get the IV for the EFS block by calling get_iv_for_block
