@@ -1,0 +1,69 @@
+/*
+** This is the structure of the binary file that we are trying to map: **
+Offset	Size	Value	Description
+0x00	4	 	        Attribute Type (e.g. 0x10, 0x60)
+0x04	4	 	        Length (including this header)
+0x08	1	    0x00	Non-resident flag
+0x09	1	    0x00	Name length
+0x0A	2	    0x00	Offset to the Name
+0x0C	2	    0x00	Flags
+0x0E	2	 	        Attribute Id (a)
+0x10	4	        L	Length of the Attribute
+0x14	2	    0x18	Offset to the Attribute
+0x16	1	 	        Indexed flag
+0x17	1	    0x00	Padding
+0x18	L	 	        The Attribute
+*/
+
+// You can use a struct to collect related fields into a single group. 
+// In this template we have created two structs:
+// AttributeBody 
+// Attribute
+// This is how you create a struct data type.
+
+typedef struct AttributeBody (int len) {
+    FILETIME file_creation_time;  
+    FILETIME file_altered_time;
+    FILETIME mft_changed_time;     
+    FILETIME file_read_time;
+    int dos_file_permissions;
+
+    local int reduce_size; 
+    reduce_size=4*sizeof(FILETIME)+sizeof(int);
+   
+    FSkip(len-reduce_size);
+};
+
+typedef struct Attribute {
+  int attr_type;
+  int attr_len_inc_header;
+  byte non_res_flg;
+  byte name_len;
+  short name_offset;
+  short flags;
+  short attr_id;
+  int attr_body_len;
+  short attr_offset;
+  byte indexed_flg;
+  byte padding;
+  AttributeBody ab(attr_body_len);
+};
+
+//Now you can just create a variable of the type Attribute
+Attribute a1;
+
+/*
+** These are the list of data types supported in 010 Editor: **
+8-Bit Signed Integer - char, byte, CHAR, BYTE
+8-Bit Unsigned Integer - uchar, ubyte, UCHAR, UBYTE
+16-Bit Signed Integer - short, int16, SHORT, INT16
+16-Bit Unsigned Integer - ushort, uint16, USHORT, UINT16, WORD
+32-Bit Signed Integer - int, int32, long, INT, INT32, LONG
+32-Bit Unsigned Integer - uint, uint32, ulong, UINT, UINT32, ULONG, DWORD
+64-Bit Signed Integer - int64, quad, QUAD, INT64, __int64
+64-Bit Unsigned Integer - uint64, uquad, UQUAD, UINT64, QWORD, __uint64
+32-Bit Floating Point Number - float, FLOAT
+64-Bit Floating Point Number - double, DOUBLE
+16-Bit Floating Point Number - hfloat, HFLOAT
+Date Types - DOSDATE, DOSTIME, FILETIME, OLETIME, time_t, time64_t (for more information on date types see Using the Inspector)
+*/
