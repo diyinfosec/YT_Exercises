@@ -1,0 +1,51 @@
+//Final interation of the template 
+
+typedef struct AttributeBody (int len) {
+    FILETIME file_creation_time <name="File Creation Time">;  
+    FILETIME file_altered_time <name="File Modification Time">;
+    FILETIME mft_changed_time <name="File Metadata Change Time">;     
+    FILETIME file_read_time <name="File Access Time">;
+    int dos_file_permissions <name="DOS File Permissions">;
+
+    local int reduce_size; 
+    reduce_size=4*sizeof(FILETIME)+sizeof(int);
+   
+    FSkip(len-reduce_size);
+};
+
+
+typedef enum <byte> {
+Yes=0,
+No=1
+} ResidentFlg;
+
+string function_readIndexedFlg (byte b)
+{
+    if(b==0)
+        return "Indexed";
+    else if (b==1)
+        return "Not Indexed";
+    else
+        return "Undefined index value";
+
+
+}
+
+typedef struct Attribute {
+    int attr_type < name="Attribute Type", comment="NTFS has about 16 different attribute types">;
+    int attr_len_inc_header <name="Attribute Length (including header)">;
+    //byte non_res_flg <name="Is Resident?">;
+    ResidentFlg r1 <name="Is Resident?">;
+    byte name_len <name="Attribute Name Length">;
+    short name_offset <name="Offset to Attribute Name">;
+    short flags <name="Flags">;    
+    short attr_id <name="Attribute ID">;
+    int attr_body_len <name="Attribute Body Length">;
+    short attr_offset <name="Offset to Attribute Body">; 
+    byte indexed_flg <name="Is Indexed?", read=function_readIndexedFlg>;
+    byte padding <name="Padding Byte">;
+    AttributeBody ab(attr_body_len) <name="Attribute Body", fgcolor=0x1D982F, bgcolor=0x0>;
+};
+
+LittleEndian();
+Attribute a1 <name="NTFS STANDARD_INFO Attribute">;
