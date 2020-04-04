@@ -1,5 +1,21 @@
 ---- TODO ---- WIP --- If you are actually reading this and finding it to be of any use please comment on the video and I'll expedite the notes. 
 
+010 Editor - What are Binary Templates? - Part 1/5
+https://www.youtube.com/watch?v=9L2pIjxHNa4
+
+
+010 Editor Templates - Building a simple template - Part 2/5
+https://www.youtube.com/watch?v=38KQWMl-U2g
+
+010 Editor Templates - Building a simple template - Part 3/5
+https://www.youtube.com/watch?v=7dlRWZAtk4c
+
+010 Editor Templates - Working with Template Results - Part 4/5
+https://www.youtube.com/watch?v=z4Eo21brNWs
+
+010 Editor Templates - Working with Template Results - Part 5/5
+https://www.youtube.com/watch?v=sfgGGajh0NA
+
 Data structure  used: https://flatcap.org/linux-ntfs/ntfs/concepts/attribute_header.html
 Data Types supported in 010 editor: https://www.sweetscape.com/010editor/manual/DataTypes.htm
 
